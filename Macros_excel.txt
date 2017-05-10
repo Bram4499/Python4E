@@ -1,0 +1,190 @@
+''Macro gebruikt om voor deelmarkt en verzekeraar combi een aantal cijfers te berekenen
+''De macro itereert door een tweetal validation boxes en herberekend de sheet voor de verschillende opties.
+''©Bram Raatjes, 2017
+
+
+''Macro starten via VBA editor
+Sub PrintOverzichtSalesOrganisatie()
+
+''Infobox met mogelijkhied tot afbreken actie
+If MsgBox("De volgende actie zal voor alle verschillende combinaties van verzekeraar en deelmarkt een aantal specifieke cijfers ophalen voor de processen binnendienst en primair proces. " _
+& "Klik 'Yes' om door te gaan, klik 'No' om te annuleren.", vbYesNo, _
+"Cijfers berekenen?") = vbNo Then Exit Sub
+
+''Variabelen declaren
+Dim rng1 As Range, rng2 As Range, cell1 As Range, cell2 As Range, i As integer
+i = 0
+ScreenUpdating = False
+
+ActiveWorkbook.Save
+
+''sheet benaderen waarop data validation boxes staan
+ActiveWorkbook.Sheets(2).Activate
+
+''validation boxes als object in variabele opslaan
+Set rng1 = Evaluate(ActiveSheet.Range("D3").Validation.Formula1)
+Set rng2 = Evaluate(ActiveSheet.Range("D4").Validation.Formula1)
+    
+    For Each cell1 In rng1
+        ActiveSheet.Range("D3") = cell1.Value
+        
+            For Each cell2 In rng2
+                ActiveSheet.Range("D4") = cell2.Value
+
+                Calculate ''nodig om model opnieuw te berekenen
+				i = i + 1
+                ''Gewenste output wordt gekopieerd naar een specifiek bereikt
+				''kopie
+				
+				''navigate to gewenste bestemming
+				''plak data
+				ActiveSheet.Range("T209:Y209").Copy
+				ActiveSheet.Cells(204 + i, 27).PasteSpecial xlPasteValues
+				
+				ActiveSheet.Range("T219:Y219").Copy
+				ActiveSheet.Cells(204 + i, 35).PasteSpecial xlPasteValues
+				
+            Next
+
+    Next
+ 
+ScreenUpdating = True
+
+End Sub
+
+
+
+''Macro gebruikt om een groot excel model met management informatie te automatiseren voor L&G
+''De macro itereert door een tweetal validation boxes en herberekend de sheet voor de verschillende opties.
+''Gemaakt november 2015
+''©Bram Raatjes, 2017
+
+Sub PrintOverzichtSalesOrganisatie()
+
+''Infobox met mogelijkhied tot afbreken actie
+If MsgBox("De volgende actie zal voor alle verschillende pijlers het overzicht totaal, per team, per functie en per medewerker printen naar pdf en opslaan in een door jou opgegeven map. " _
+& "Hiervoor worden default printinstellingen gebruikt. Page Break Settings moeten dus goed staan. Klik 'Yes' om door te gaan, klik 'No' om te annuleren.", vbYesNo, _
+"Dashboard printen?") = vbNo Then Exit Sub
+
+''Variabelen declaren
+Dim rng1 As Range, rng2 As Range, cell1 As Range, cell2 As Range, strFilename As String, path As String
+
+''prompt om de doelmap te bepalen
+With Application.FileDialog(msoFileDialogFolderPicker)
+    .AllowMultiSelect = False
+    .Show
+    
+    If .SelectedItems.Count = 1 Then
+        path = .SelectedItems(1) & "\"
+    
+    Else: Exit Sub ''bij het niet selecteren van een map, stopt de macro
+    
+    End If
+End With
+
+ScreenUpdating = False
+
+''Actionbutton bevindt zich in sheet(2), sheet 3 selecteren om dashboard te benaderen
+ActiveWorkbook.Sheets(3).Activate
+
+''validation box als object in variabele opslaan
+Set rng1 = Evaluate(ActiveSheet.Range("AU4").Validation.Formula1)
+    
+    ''loop door alle 4 pijlers
+    For Each cell1 In rng1
+        ActiveSheet.Range("AU4") = cell1.Value
+
+        Calculate ''nodig om dashboard opnieuw te berekenen
+        
+        ''Filname: timestamp + naam pijler
+        strFilename = Format(Now(), "yyyymmdd hhmmss") & "_Overzicht_" & cell1.Value
+
+        ''Print de actieve sheet naar pdf - hiervoor pagebreak instellingen goed zetten!
+        ''En tevens de gewenste doelmap opgeven
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:= _
+        path & strFilename & ".pdf" _
+        , Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas _
+        :=False, OpenAfterPublish:=False
+
+    Next
+
+''volgende sheet benaderen
+ActiveWorkbook.Sheets(4).Activate
+
+''validation boxes als object in variabele opslaan
+Set rng1 = Evaluate(ActiveSheet.Range("AU4").Validation.Formula1)
+Set rng2 = Evaluate(ActiveSheet.Range("BO4").Validation.Formula1)
+    
+    For Each cell1 In rng1
+        ActiveSheet.Range("AU4") = cell1.Value
+        
+            For Each cell2 In rng2
+                ActiveSheet.Range("BO4") = cell2.Value
+
+                Calculate ''nodig om dashboard opnieuw te berekenen
+
+                ''Filname: timestamp + naam pijler + regio
+                strFilename = Format(Now(), "yyyymmdd hhmmss") & "_Overzicht_" & cell1.Value _
+                & "_" & cell2.Value
+
+                ''Print de actieve sheet naar pdf - hiervoor pagebreak instellingen goed zetten!
+                ''En tevens de gewenste doelmap opgeven
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:= _
+                path & strFilename & ".pdf" _
+                , Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas _
+                :=False, OpenAfterPublish:=False
+            
+            Next
+
+    Next
+    
+''volgende sheet benaderen
+ActiveWorkbook.Sheets(5).Activate
+
+''validation boxes als object in variabele opslaan
+Set rng1 = Evaluate(ActiveSheet.Range("AX4").Validation.Formula1)
+Set rng2 = Evaluate(ActiveSheet.Range("BO4").Validation.Formula1)
+    
+    For Each cell1 In rng1
+        ActiveSheet.Range("AX4") = cell1.Value
+        
+            For Each cell2 In rng2
+                ActiveSheet.Range("BO4") = cell2.Value
+
+                Calculate ''nodig om dashboard opnieuw te berekenen
+
+                ''Filname: timestamp + naam pijler & functie
+                strFilename = Format(Now(), "yyyymmdd hhmmss") & "_Overzicht_" & cell1.Value _
+                & "_" & cell2.Value
+
+                ''Print de actieve sheet naar pdf - hiervoor pagebreak instellingen goed zetten!
+                ''En tevens de gewenste doelmap opgeven
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:= _
+                path & strFilename & ".pdf" _
+                , Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas _
+                :=False, OpenAfterPublish:=False
+            
+            Next
+
+    Next
+    
+''volgende sheet benaderen
+ActiveWorkbook.Sheets(6).Activate
+
+    Calculate ''nodig om dashboard opnieuw te berekenen
+
+                ''Filname: timestamp + naam sheet
+                strFilename = Format(Now(), "yyyymmdd hhmmss") & "_Inzicht per medewerker"
+
+                ''Print de actieve sheet naar pdf - hiervoor pagebreak instellingen goed zetten!
+                ''En tevens de gewenste doelmap opgeven
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:= _
+                path & strFilename & ".pdf" _
+                , Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas _
+                :=False, OpenAfterPublish:=False
+
+
+ScreenUpdating = True
+
+End Sub
+
